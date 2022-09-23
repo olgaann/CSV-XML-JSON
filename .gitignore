@@ -1,0 +1,6 @@
+.idea/
+*.iml
+target/
+out/
+file.txt
+basket.bin
