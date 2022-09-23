@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Main {
@@ -11,6 +12,7 @@ public class Main {
         double[] prices = {100.50, 75.00, 110.00, 800.00}; // массив цен
         Basket basket = new Basket();
         Scanner scan = new Scanner(System.in);
+        ClientLog myLog = new ClientLog();
 
         //создаем файл для записи/получения сведений о корзине
         File file = new File("file.txt");
@@ -57,10 +59,13 @@ public class Main {
                 continue;
             }
             basket.addToCart(productNumber, amount);
+            myLog.log((productNumber+1), amount);
             basket.saveTxt(file);
 
         }
         scan.close();
+        myLog.exportAsCSV(new File("log.csv"));
+
 
 
     }
