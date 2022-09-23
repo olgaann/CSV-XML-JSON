@@ -1,3 +1,8 @@
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 import java.io.*;
 import java.text.DecimalFormat;
 import java.util.Arrays;
@@ -9,6 +14,7 @@ public class Basket {
     private String[] products;
     private double[] prices;
     private int[] bin;
+    private JSONObject object = new JSONObject();
     static final int QTY_OF_LINES = 3;
     static DecimalFormat dF = new DecimalFormat("0.00");
 
@@ -57,21 +63,9 @@ public class Basket {
     public void saveTxt(File textFile) throws FileNotFoundException { //метод сохранения корзины в текстовый файл
         PrintWriter writer = new PrintWriter(textFile);
 
-        Double[] pricesDouble = new Double[prices.length];
-        int i = 0;
-        for (double value : prices) {
-            pricesDouble[i++] = Double.valueOf(value);
-        }
-
-        Integer[] binInteger = new Integer[bin.length];
-        i = 0;
-        for (int value : bin) {
-            binInteger[i++] = Integer.valueOf(value);
-        }
-
         subSaveTxt(products, textFile, writer);
-        subSaveTxt(pricesDouble, textFile, writer);
-        subSaveTxt(binInteger, textFile, writer);
+        subSaveTxt(convertPrices(prices), textFile, writer);
+        subSaveTxt(convertBin(bin), textFile, writer);
         writer.close();
 
     }
@@ -86,7 +80,7 @@ public class Basket {
 
     }
 
-    static Basket loadFromTxtFile(File textFile) {
+    static Basket loadFromTxtFile(File textFile) { // метод загрузки корзины из текстового файла
 
         String[] arrOfLines = new String[QTY_OF_LINES];
 
@@ -111,6 +105,83 @@ public class Basket {
 
         return new Basket(productsNew, pricesNew, binNew);
     }
+
+    public void saveJson(File textFile) { //метод сохранения корзины в файл json
+
+        object.put("Ассортимент: ", subSaveJson(products));
+        object.put("Цены: ", subSaveJson(convertPrices(prices)));
+        object.put("Корзина: ", subSaveJson(convertBin(bin)));
+
+
+        try (FileWriter writer = new FileWriter(textFile)) {
+            writer.write(object.toJSONString());
+            writer.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public <T> JSONArray subSaveJson(T[] arr) { //доп.дженерик-метод, чтобы избежать копирования в методе saveJson
+        JSONArray result = new JSONArray();
+        for (T elem : arr) {
+            result.add(elem);
+        }
+        return result;
+    }
+
+    static Basket loadFromJson(File textFile) {
+        JSONParser parser = new JSONParser();
+        JSONArray productsJSON = new JSONArray();
+        JSONArray pricesJSON = new JSONArray();
+        JSONArray binJSON = new JSONArray();
+        try {
+            Object object = parser.parse(new FileReader(textFile));
+            JSONObject jsonObject = (JSONObject) object;
+            productsJSON = (JSONArray) jsonObject.get("Ассортимент: ");
+            pricesJSON = (JSONArray) jsonObject.get("Цены: ");
+            binJSON = (JSONArray) jsonObject.get("Корзина: ");
+
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+        }
+        String[] productsNew = new String[productsJSON.size()];
+        Double[] pricesNewDouble = new Double[pricesJSON.size()];
+        Long[] binNewLong = new Long[binJSON.size()];
+
+        productsNew = jsonToArray(productsJSON, productsNew);
+        pricesNewDouble = jsonToArray(pricesJSON, pricesNewDouble);
+        double[] pricesNew = Arrays.stream(pricesNewDouble).mapToDouble(d -> d).toArray();
+        binNewLong = jsonToArray(binJSON, binNewLong);
+        int[] binNew = Arrays.stream(binNewLong).mapToLong(l -> l).mapToInt(l -> (int) l).toArray();
+
+        return new Basket(productsNew, pricesNew, binNew);
+    }
+
+    public static <T> T[] jsonToArray(JSONArray jsonArray, T[] arr) { //"конвертирует" JSONArray в массив типа Т
+        for (int i = 0; i < jsonArray.size(); i++) {
+            arr[i] = (T) jsonArray.get(i);
+        }
+        return arr;
+    }
+
+    public static Double[] convertPrices(double[] prices) { // "конвертирует" массив double[] в Double[]
+        Double[] pricesDouble = new Double[prices.length];
+        int i = 0;
+        for (double value : prices) {
+            pricesDouble[i++] = Double.valueOf(value);
+        }
+        return pricesDouble;
+    }
+
+    public static Integer[] convertBin(int[] bin) { // "конвертирует" массив int[] в Integer[]
+        Integer[] binInteger = new Integer[bin.length];
+        int i = 0;
+        for (int value : bin) {
+            binInteger[i++] = Integer.valueOf(value);
+        }
+        return binInteger;
+    }
+
 
 }
 

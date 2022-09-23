@@ -8,19 +8,20 @@ public class Main {
 
     public static void main(String[] args) throws FileNotFoundException {
 
-        String[] products = {"Молоко", "Хлеб", "Яблоки", "Сыр"}; // массив товаров (ассортимента)
+        String[] products = {"Йогурт", "Хлеб", "Яблоки", "Сыр"}; // массив товаров (ассортимента)
         double[] prices = {100.50, 75.00, 110.00, 800.00}; // массив цен
         Basket basket = new Basket();
         Scanner scan = new Scanner(System.in);
         ClientLog myLog = new ClientLog();
 
-        //создаем файл для записи/получения сведений о корзине
+        //создаем файлы для записи/получения сведений о корзине
         File file = new File("file.txt");
+        File fileJson = new File("basket.json");
         try {
-            if (file.createNewFile() || file.length() == 0L) {
+            if (fileJson.createNewFile() || fileJson.length() == 0L) {
                 basket = new Basket(products, prices);
             } else {
-                basket = Basket.loadFromTxtFile(file);
+                basket = Basket.loadFromJson(fileJson);
             }
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
@@ -59,13 +60,14 @@ public class Main {
                 continue;
             }
             basket.addToCart(productNumber, amount);
-            myLog.log((productNumber+1), amount);
+            myLog.log((productNumber + 1), amount);
             basket.saveTxt(file);
+            basket.saveJson(fileJson);
+            Basket.loadFromJson(fileJson);
 
         }
         scan.close();
         myLog.exportAsCSV(new File("log.csv"));
-
 
 
     }
