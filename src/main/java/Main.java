@@ -1,7 +1,6 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Scanner;
 
 public class Main {
@@ -63,7 +62,7 @@ public class Main {
             myLog.log((productNumber + 1), amount);
             basket.saveTxt(file);
             basket.saveJson(fileJson);
-            Basket.loadFromJson(fileJson);
+
 
         }
         scan.close();
