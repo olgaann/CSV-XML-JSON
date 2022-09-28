@@ -2,7 +2,9 @@
 *.iml
 target/
 out/
-file.txt
+basket.txt
 basket.bin
-log.csv
+*csv
 basket.json
+
+
